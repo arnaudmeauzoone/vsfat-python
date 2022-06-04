@@ -3,8 +3,6 @@
 import socket
 from vsfat import *
 
-v_mem = bytearray(b'\x00'*134217728)
-
 class Request:
     def __init__(self, r_magic, r_type, r_handle, r_from, r_len):
         self.r_magic = r_magic
@@ -33,9 +31,9 @@ server.bind(('', 15555))
 
 build_mbr()
 build_boot_sector()
-build_fats()
-build_root_dir()
-scan_folder()
+# build_fats()
+# build_root_dir()
+# scan_folder()
 
 
 while True:
@@ -59,7 +57,9 @@ while True:
       if(int.from_bytes(request.r_type, "big") == 0): ## read request
           print("received read request of lenth {0} from {1}".format(request.r_len.hex(), request.r_from.hex()))
           conn.sendall(reply_data)
-          buf = read_data(int.from_bytes(request.r_from, "big"), int.from_bytes(request.r_len, "big"))
+          #buf = read_data(int.from_bytes(request.r_from, "big"), int.from_bytes(request.r_len, "big"))
+          buf = bytearray()
+          buf.extend(v_mem[int.from_bytes(request.r_from, "big"):int.from_bytes(request.r_from, "big")+int.from_bytes(request.r_len, "big")])
           conn.sendall(buf)
       if(int.from_bytes(request.r_type, "big") == 1): ## write request
           print("received write request of lenth {0} from {1}".format(request.r_len.hex(), request.r_from.hex()))
