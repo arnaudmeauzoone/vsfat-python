@@ -32,6 +32,10 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(('', 15555))
 
 build_mbr()
+build_boot_sector()
+build_fats()
+build_root_dir()
+scan_folder()
 
 
 while True:
