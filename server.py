@@ -59,8 +59,7 @@ while True:
       if(int.from_bytes(request.r_type, "big") == 0): ## read request
           print("received read request of lenth {0} from {1}".format(request.r_len.hex(), request.r_from.hex()))
           conn.sendall(reply_data)
-          buf = bytearray()
-          buf.extend(v_mem[int.from_bytes(request.r_from, "big"):int.from_bytes(request.r_from, "big")+int.from_bytes(request.r_len, "big")])
+          buf = read_data(int.from_bytes(request.r_from, "big"), int.from_bytes(request.r_len, "big"))
           conn.sendall(buf)
       if(int.from_bytes(request.r_type, "big") == 1): ## write request
           print("received write request of lenth {0} from {1}".format(request.r_len.hex(), request.r_from.hex()))

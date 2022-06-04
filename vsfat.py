@@ -15,13 +15,28 @@ def read_data(offset, len):
     buf = bytearray()
 
     for dataRegion in dataRegions:
-        if offset + len  < dataRegion.base || offset > dataRegion.base + dataRegion.len:
-            return
-        if dataRegion.mem:
-            buf.extend(dataRegion.mem[offset:len])
-        elif dataRegion.file:
-            with open("hello.txt", "r+b") as f:
-                mm = mmap.mmap(f.fileno(), 0)
-                buf.extend(mm[offset:len])
+        if offset >= dataRegion.base + dataRegion.len:
+            continue
+        if offset + len <= dataRegion.base:
+            continue
+        if (offset <= dataRegion.base && offset + len <= dataRegion.base + dataRegion.len):
+            usepose = 0
+            uselen = offset + len - dataRegion.base
+        if (offset >= dataRegion.base && offset + len <= dataRegion.base + dataRegion.len):
+            usepose = offset - dataRegion.base
+            uselen = len
+        if (offset >= dataRegion.base && offset + len >= dataRegion.base + dataRegion.len):
+            usepose = offset - dataRegion.base
+            uselen = dataRegion.base + dataRegion.len - offset
+        if (offset <= dataRegion.base && offset + len >= dataRegion.base + dataRegion.len):
+            usepose = 0
+            uselen = dataRegion.base + dataRegion.len - offset
+
+            if dataRegion.mem:
+                buf.extend(dataRegion.mem[offset:len])
+            elif dataRegion.file:
+                with open(dataRegion.file, 'rb') as f:
+                    mm = mmap.mmap(f.fileno(), 0)
+                    buf.extend(mm[offset:len])
 
     return buf
