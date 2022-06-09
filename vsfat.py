@@ -37,12 +37,16 @@ def build_mbr():
     print("mbr done")
 
 def build_boot_sector():
+    BPB_BytsPerSec = 512
+    BkBootSec = 6
+    part1_base = 1048576
+
     bootentry = bytearray()
     bootentry.extend(b'\xeb') ## BS_jmpBoot[0]
     bootentry.extend(b'\x58') ## BS_jmpBoot[1]
     bootentry.extend(b'\x90') ## BS_jmpBoot[1]
     bootentry.extend("VSFAT1.0".encode('utf-8')) ## BS_OEMName
-    bootentry.extend(bytes(512)) ## BPB_BytsPerSec
+    bootentry.extend(bytes(BPB_BytsPerSec)) ## BPB_BytsPerSec
     bootentry.extend(bytes(32)) ## SecPerClus
     bootentry.extend(bytes(32)) ## RsvdSecCnt
     bootentry.extend(bytes(2)) ## NumFATs
@@ -59,7 +63,7 @@ def build_boot_sector():
     bootentry.extend(bytes(0)) ## FSVer
     bootentry.extend(bytes(2)) ## RootClus
     bootentry.extend(bytes(1)) ## FSInfo
-    bootentry.extend(bytes(6)) ## BkBootSec
+    bootentry.extend(bytes(BkBootSec)) ## BkBootSec
     bootentry.extend(bytes(128)) ## DrvNum
     bootentry.extend(bytes(0)) ## Reserved1
     bootentry.extend(bytes(29)) ## BootSig
@@ -68,12 +72,31 @@ def build_boot_sector():
     bootentry.extend(bytes([0x56, 0x53, 0x46, 0x41, 0x54, 0x46, 0x53, 0x20, 0x20, 0x20, 0x20])) ## VolLab
     bootentry.extend(bytes([0x46, 0x41, 0x54, 0x33, 0x32, 0x20, 0x20, 0x20])) ## FilSysType
 
-    dataRegions.append(DataRegion(1048576, 512, bootentry, 0))
-    dataRegions.append(DataRegion(1048576 + 512*32, 512, bootentry, 0))
+    dataRegions.append(DataRegion(part1_base, 512, bootentry, 0))
+    dataRegions.append(DataRegion(part1_base + BkBootSec*BPB_BytsPerSec, 512, bootentry, 0))
 
-    v_mem[1048576: 1048576 + 512] = bootentry
-    v_mem[1048576 + 512*32: 1048576 + 512*32 + 512] = bootentry
+    v_mem[part1_base: part1_base + 512] = bootentry
+    v_mem[part1_base + BkBootSec*BPB_BytsPerSec: part1_base + BkBootSec*BPB_BytsPerSec + 512] = bootentry
 
+def build_fats():
+    BPB_FATSz32 = 8189
+    BPB_BytsPerSec = 512
+    BPB_RsvdSecCnt = 32
+    part1_base = 1048576
+
+    fatspecial = bytes([0x00, 0x20, 0x21, 0x00, 0x0c, 0xcd, 0xfb, 0xd2, 0x00, 0x08, 0x00, 0x00,0x00, 0xf8, 0xdf, 0xff])
+
+    fat = bytearray(b'\x00'*BPB_FATSz32*BPB_BytsPerSec)
+    fat[0:len(fatspecial)] = fatspecial
+
+    dataRegions.append(DataRegion(part1_base + BPB_BytsPerSec * (BPB_RsvdSecCnt + BPB_FATSz32 * 0), BPB_FATSz32 * BPB_BytsPerSec, fat, 0))
+    dataRegions.append(DataRegion(part1_base + BPB_BytsPerSec * (BPB_RsvdSecCnt + BPB_FATSz32 * 1), BPB_FATSz32 * BPB_BytsPerSec, fat, 0))
+
+def build_root_dir():
+    pass
+
+def scan_folders():
+    pass
 
 def read_data(offset, lenth):
 
@@ -103,6 +126,7 @@ def read_data(offset, lenth):
                 with open(dataRegion.file, 'rb') as f:
                     mm = mmap.mmap(f.fileno(), 0)
                     buf.extend(mm[usepose:uselen])
+
     pad = (lenth - len(buf))
     buf.extend(b'\x00'*pad)
     return buf
