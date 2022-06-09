@@ -46,27 +46,27 @@ def build_boot_sector():
     bootentry.extend(b'\x58') ## BS_jmpBoot[1]
     bootentry.extend(b'\x90') ## BS_jmpBoot[1]
     bootentry.extend("VSFAT1.0".encode('utf-8')) ## BS_OEMName
-    bootentry.extend(bytes(BPB_BytsPerSec)) ## BPB_BytsPerSec
-    bootentry.extend(bytes(32)) ## SecPerClus
-    bootentry.extend(bytes(32)) ## RsvdSecCnt
-    bootentry.extend(bytes(2)) ## NumFATs
-    bootentry.extend(bytes(0)) ## RootEntCnt
-    bootentry.extend(bytes(0)) ## TotSec16
-    bootentry.extend(bytes(248)) ## Media
-    bootentry.extend(bytes(0)) ## FATSz16
-    bootentry.extend(bytes(32)) ## SecPerTrk
-    bootentry.extend(bytes(64)) ## NumHeads
-    bootentry.extend(bytes(0)) ## HiddSec
-    bootentry.extend(bytes(102400)) ## TotSec32
-    bootentry.extend(bytes(8189)) ## FATSz32
-    bootentry.extend(bytes(0)) ## ExtFlags
-    bootentry.extend(bytes(0)) ## FSVer
-    bootentry.extend(bytes(2)) ## RootClus
-    bootentry.extend(bytes(1)) ## FSInfo
-    bootentry.extend(bytes(BkBootSec)) ## BkBootSec
-    bootentry.extend(bytes(128)) ## DrvNum
-    bootentry.extend(bytes(0)) ## Reserved1
-    bootentry.extend(bytes(29)) ## BootSig
+    bootentry.extend(BPB_BytsPerSec.to_bytes(2,byteorder='little')) ## BPB_BytsPerSec
+    bootentry.extend((32).to_bytes(1,byteorder='little')) ## SecPerClus
+    bootentry.extend((32).to_bytes(2,byteorder='little')) ## RsvdSecCnt
+    bootentry.extend((2).to_bytes(1,byteorder='little')) ## NumFATs
+    bootentry.extend((0).to_bytes(2,byteorder='little')) ## RootEntCnt
+    bootentry.extend((0).to_bytes(2,byteorder='little')) ## TotSec16
+    bootentry.extend((248).to_bytes(1,byteorder='little')) ## Media
+    bootentry.extend((0).to_bytes(2,byteorder='little')) ## FATSz16
+    bootentry.extend((32).to_bytes(2,byteorder='little')) ## SecPerTrk
+    bootentry.extend((64).to_bytes(2,byteorder='little')) ## NumHeads
+    bootentry.extend((0).to_bytes(4,byteorder='little')) ## HiddSec
+    bootentry.extend((102400).to_bytes(4,byteorder='little')) ## TotSec32
+    bootentry.extend((8189).to_bytes(4,byteorder='little')) ## FATSz32
+    bootentry.extend((252).to_bytes(2,byteorder='little')) ## ExtFlags if we change that it hangs
+    bootentry.extend((0).to_bytes(2,byteorder='little')) ## FSVer
+    bootentry.extend((2).to_bytes(4,byteorder='little')) ## RootClus
+    bootentry.extend((1).to_bytes(2,byteorder='little')) ## FSInfo
+    bootentry.extend(BkBootSec.to_bytes(2,byteorder='little')) ## BkBootSec
+    bootentry.extend((128).to_bytes(1,byteorder='little')) ## DrvNum
+    bootentry.extend((0).to_bytes(1,byteorder='little')) ## Reserved1
+    bootentry.extend((29).to_bytes(1,byteorder='little')) ## BootSig
     bootentry.extend(b'\x84\x56\xf2\x37') ## VolID
     bootentry.extend(b'\xAA\x55') ## BootSign
     bootentry.extend(bytes([0x56, 0x53, 0x46, 0x41, 0x54, 0x46, 0x53, 0x20, 0x20, 0x20, 0x20])) ## VolLab
